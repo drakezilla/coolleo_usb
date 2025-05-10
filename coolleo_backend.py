@@ -60,11 +60,19 @@ def send_packet_to_device(mode, brightness, ser):
 
 
 def auto_refresh(ser):
+    alt_state = "temperature"  # Estado actual de la alternancia
+
     while True:
-        send_packet_to_device(current_mode, current_brightness, ser)
+        mode_to_use = current_mode
+        if current_mode == "alternate":
+            mode_to_use = alt_state
+            # Cambiar para la siguiente iteración
+            alt_state = "ucpu" if alt_state == "temperature" else "temperature"
+
+        send_packet_to_device(mode_to_use, current_brightness, ser)
         time.sleep(refresh_interval)
 
-def handle_client(conn):
+def handle_client(conn, ser):
     global current_mode, current_brightness
     with conn:
         while True:
@@ -77,12 +85,12 @@ def handle_client(conn):
             if cmd.startswith("SET_MODE"):
                 _, mode = cmd.split()
                 current_mode = mode
-                send_packet_to_device(current_mode, current_brightness)
+                send_packet_to_device(current_mode, current_brightness, ser)
                 conn.sendall(f"OK. Modo cambiado a {mode}\n".encode())
             elif cmd.startswith("SET_BRIGHTNESS"):
                 _, level = cmd.split()
                 current_brightness = int(level)
-                send_packet_to_device(current_mode, current_brightness)
+                send_packet_to_device(current_mode, current_brightness, ser)
                 conn.sendall(f"OK. Brillo cambiado a {level}\n".encode())
             elif cmd.startswith("GET_STATUS"):
                 status = f"Modo: {current_mode}, Brillo: {current_brightness}"
@@ -103,7 +111,7 @@ def socket_server():
 
             while True:
                 conn, _ = server.accept()
-                threading.Thread(target=handle_client, args=(conn,)).start()
+                threading.Thread(target=handle_client, args=(conn,ser)).start()
     except KeyboardInterrupt:
         print("Backend finalizado.")
 
