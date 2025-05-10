@@ -12,7 +12,7 @@ def get_cpu_temp():
     try:
         output = subprocess.check_output(["sensors"]).decode()
         for line in output.splitlines():
-            if "Package" in line or "Tdie" in line or "CPU" in line:
+            if "Package" in line or "Tctl" in line or "CPU" in line:
                 parts = line.split()
                 for part in parts:
                     if "°C" in part:
