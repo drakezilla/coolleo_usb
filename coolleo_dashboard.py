@@ -4,7 +4,7 @@ import pyqtgraph as pg
 from PyQt6.QtCore import Qt, QTimer, QTranslator
 from PyQt6.QtWidgets import (
     QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel,
-    QVBoxLayout, QPushButton, QSlider, QHBoxLayout
+    QVBoxLayout, QPushButton, QSlider, QHBoxLayout, QComboBox
 )
 from PyQt6.QtGui import QIcon, QAction
 
@@ -75,6 +75,22 @@ class DashboardWindow(QWidget):
         brightness_layout.addStretch()
 
         main_layout.addLayout(brightness_layout)
+
+        # Selector de Idioma
+        language_layout = QHBoxLayout()
+        language_label = QLabel(self.tr("Idioma:"))
+        language_label.setStyleSheet("font-size: 14px; padding-right: 10px;")
+
+        self.language_selector = QComboBox()
+        self.language_selector.addItem("Español", "es")
+        self.language_selector.addItem("Inglés", "en")
+        self.language_selector.currentIndexChanged.connect(self.change_language)
+
+        language_layout.addWidget(language_label)
+        language_layout.addWidget(self.language_selector)
+        language_layout.addStretch()
+
+        main_layout.addLayout(language_layout)
 
         self.setLayout(main_layout)
 
@@ -148,50 +164,20 @@ class DashboardWindow(QWidget):
         self.alternate_button.setText(self.tr("Alternar Temp/UCPU"))
         self.brightness_label.setText(self.tr("Brillo:"))
 
+    def change_language(self):
+        language_code = self.language_selector.currentData()
+        set_language(QApplication.instance(), language_code, self)
+
 def set_language(app, language_code, dashboard_window):
-    global current_tray
+    global translator
+    translator = QTranslator()
 
     if language_code == "es":
         translator.load("i18n/ES_es.qm")
     elif language_code == "en":
         translator.load("i18n/EN_en.qm")
+
     app.installTranslator(translator)
-
-    if current_tray:
-        current_tray.hide()
-        current_tray.deleteLater()
-
-    # Crear nuevo systray y asignar a la variable global
-    current_tray = QSystemTrayIcon()
-    current_tray.setIcon(QIcon.fromTheme("preferences-system"))
-    current_tray.setVisible(True)
-
-    # Crear nuevo menú
-    new_menu = QMenu()
-
-    action_show = QAction(app.translate("SysTray", "Mostrar Panel"))
-    action_show.triggered.connect(dashboard_window.show)
-    new_menu.addAction(action_show)
-
-    language_menu = QMenu(app.translate("SysTray", "Idioma"))
-
-    english_action = QAction(app.translate("SysTray", "Inglés"))
-    english_action.triggered.connect(lambda: set_language(app, "en", dashboard_window))
-    language_menu.addAction(english_action)
-
-    spanish_action = QAction(app.translate("SysTray", "Español"))
-    spanish_action.triggered.connect(lambda: set_language(app, "es", dashboard_window))
-    language_menu.addAction(spanish_action)
-
-    new_menu.addMenu(language_menu)
-
-    exit_action = QAction(app.translate("SysTray", "Salir"))
-    exit_action.triggered.connect(app.quit)
-    new_menu.addAction(exit_action)
-
-    current_tray.setContextMenu(new_menu)
-
-    # Actualizar la UI de la ventana principal
     dashboard_window.update_ui_texts()
 
 def systraymenu():
@@ -200,29 +186,16 @@ def systraymenu():
 
     dashboard_window = DashboardWindow()
 
-    # Crear systray inicial y asignar a la variable global
+    # Crear systray inicial
     current_tray = QSystemTrayIcon()
     current_tray.setIcon(QIcon.fromTheme("preferences-system"))
     current_tray.setVisible(True)
 
-    # Crear menú inicial
+    # Crear menú simple
     menu = QMenu()
-
     action_show = QAction(app.translate("SysTray", "Mostrar Panel"))
     action_show.triggered.connect(dashboard_window.show)
     menu.addAction(action_show)
-
-    language_menu = QMenu(app.translate("SysTray", "Idioma"))
-
-    english_action = QAction(app.translate("SysTray", "Inglés"))
-    english_action.triggered.connect(lambda: set_language(app, "en", dashboard_window))
-    language_menu.addAction(english_action)
-
-    spanish_action = QAction(app.translate("SysTray", "Español"))
-    spanish_action.triggered.connect(lambda: set_language(app, "es", dashboard_window))
-    language_menu.addAction(spanish_action)
-
-    menu.addMenu(language_menu)
 
     exit_action = QAction(app.translate("SysTray", "Salir"))
     exit_action.triggered.connect(app.quit)
