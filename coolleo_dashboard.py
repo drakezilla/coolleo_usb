@@ -20,7 +20,7 @@ class DashboardWindow(QWidget):
     def init_ui(self):
         self.setWindowTitle(self.tr("Panel de control Coolleo"))
         self.setFixedSize(600, 400)
-        self.setWindowIcon(QIcon("resources/icon/coolleo_dashboard.svg"))
+        self.setWindowIcon(QIcon("./resources/icon/coolleo_dashboard.svg"))
 
         main_layout = QVBoxLayout()
         main_layout.setSpacing(24)
@@ -204,7 +204,7 @@ def systraymenu():
     dashboard_window = DashboardWindow()
 
     current_tray = QSystemTrayIcon()
-    current_tray.setIcon(QIcon("resources/icon/coolleo_dashboard.svg"))
+    current_tray.setIcon(QIcon("./resources/icon/coolleo_dashboard.svg"))
     current_tray.setVisible(True)
 
     menu = QMenu()
