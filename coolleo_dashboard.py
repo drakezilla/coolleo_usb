@@ -9,7 +9,8 @@ from PyQt6.QtWidgets import (
 from PyQt6.QtGui import QIcon, QAction
 
 translator = QTranslator()
-current_tray = None  # Referencia global al systray
+current_tray = None
+tray_actions = {}  # Almacenar las acciones del systray para actualizar sus textos
 
 class DashboardWindow(QWidget):
     def __init__(self):
@@ -163,6 +164,7 @@ class DashboardWindow(QWidget):
         self.ucpu_button.setText(self.tr("Mostrar UCPU"))
         self.alternate_button.setText(self.tr("Alternar Temp/UCPU"))
         self.brightness_label.setText(self.tr("Brillo:"))
+        update_systray_texts()
 
     def change_language(self):
         language_code = self.language_selector.currentData()
@@ -180,19 +182,24 @@ def set_language(app, language_code, dashboard_window):
     app.installTranslator(translator)
     dashboard_window.update_ui_texts()
 
-def systraymenu():
-    global current_tray
-    app = QApplication(sys.argv)
+def update_systray_texts():
+    global tray_actions, current_tray
+    if tray_actions and current_tray:
+        app = QApplication.instance()
+        tray_actions['show'].setText(app.translate("SysTray", "Mostrar Panel"))
+        tray_actions['exit'].setText(app.translate("SysTray", "Salir"))
 
+def systraymenu():
+    global current_tray, tray_actions
+    app = QApplication(sys.argv)
     dashboard_window = DashboardWindow()
 
-    # Crear systray inicial
     current_tray = QSystemTrayIcon()
     current_tray.setIcon(QIcon.fromTheme("preferences-system"))
     current_tray.setVisible(True)
 
-    # Crear menú simple
     menu = QMenu()
+
     action_show = QAction(app.translate("SysTray", "Mostrar Panel"))
     action_show.triggered.connect(dashboard_window.show)
     menu.addAction(action_show)
@@ -200,6 +207,8 @@ def systraymenu():
     exit_action = QAction(app.translate("SysTray", "Salir"))
     exit_action.triggered.connect(app.quit)
     menu.addAction(exit_action)
+
+    tray_actions = {'show': action_show, 'exit': exit_action}
 
     current_tray.setContextMenu(menu)
 
