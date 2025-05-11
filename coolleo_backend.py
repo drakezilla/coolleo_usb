@@ -4,6 +4,9 @@ import time
 import serial
 import subprocess
 import psutil
+import logging
+import sys
+import os
 
 SOCKET_PATH = "/tmp/coolleo_socket"
 PORT = "/dev/ttyACM0"
@@ -12,6 +15,20 @@ BAUDRATE = 9600
 current_mode = "temperature"
 current_brightness = 5
 refresh_interval = 2  # Segundos
+
+# --- Logger Setup ---
+def setup_logger(verbose=False):
+    logger = logging.getLogger("coolleo_backend")
+    if not logger.handlers:
+        handler = logging.StreamHandler(sys.stdout)
+        formatter = logging.Formatter('%(asctime)s - %(levelname)s - %(message)s')
+        handler.setFormatter(formatter)
+        logger.addHandler(handler)
+        logger.setLevel(logging.DEBUG if verbose else logging.WARNING)
+    return logger
+
+verbose_mode = "--verbose" in sys.argv
+logger = setup_logger(verbose_mode)
 
 def get_cpu_temp():
     try:
@@ -23,7 +40,8 @@ def get_cpu_temp():
                     if "°C" in part:
                         return int(float(part.replace("°C", "").replace("+", "")))
         return 40
-    except:
+    except Exception as e:
+        logger.warning(f"Error al obtener temperatura: {e}")
         return 40
 
 def get_cpu_usage():
@@ -39,7 +57,8 @@ def get_cpu_watts():
                     if "W" in part and i > 0:
                         return min(int(float(parts[i - 1])), 99)
         return 0
-    except:
+    except Exception as e:
+        logger.warning(f"Error al obtener consumo: {e}")
         return 0
 
 def send_packet_to_device(mode, brightness, ser):
@@ -56,17 +75,14 @@ def send_packet_to_device(mode, brightness, ser):
     packet_bytes = bytes.fromhex(packet)
 
     ser.write(packet_bytes)
-    print(f"Enviado al disipador: {packet.upper()}")
-
+    logger.debug(f"Enviado al disipador: {packet.upper()}")
 
 def auto_refresh(ser):
-    alt_state = "temperature"  # Estado actual de la alternancia
-
+    alt_state = "temperature"
     while True:
         mode_to_use = current_mode
         if current_mode == "alternate":
             mode_to_use = alt_state
-            # Cambiar para la siguiente iteración
             alt_state = "ucpu" if alt_state == "temperature" else "temperature"
 
         send_packet_to_device(mode_to_use, current_brightness, ser)
@@ -80,7 +96,7 @@ def handle_client(conn, ser):
             if not data:
                 break
             cmd = data.decode().strip()
-            print(f"Comando recibido: {cmd}")
+            logger.debug(f"Comando recibido: {cmd}")
 
             if cmd.startswith("SET_MODE"):
                 _, mode = cmd.split()
@@ -101,26 +117,29 @@ def handle_client(conn, ser):
             else:
                 conn.sendall(b"ERROR. Comando no reconocido.\n")
 
-def socket_server():
-    try:
-        import os
-        if os.path.exists(SOCKET_PATH):
-            os.remove(SOCKET_PATH)
+def socket_server(ser):
+    if os.path.exists(SOCKET_PATH):
+        os.remove(SOCKET_PATH)
 
-        with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server:
-            server.bind(SOCKET_PATH)
-            server.listen()
-            print(f"Servidor de control escuchando en {SOCKET_PATH}")
+    with socket.socket(socket.AF_UNIX, socket.SOCK_STREAM) as server:
+        server.bind(SOCKET_PATH)
+        server.listen()
+        logger.info(f"Servidor de control escuchando en {SOCKET_PATH}")
 
-            while True:
-                conn, _ = server.accept()
-                threading.Thread(target=handle_client, args=(conn,ser)).start()
-    except KeyboardInterrupt:
-        print("Backend finalizado.")
+        while True:
+            conn, _ = server.accept()
+            threading.Thread(target=handle_client, args=(conn, ser)).start()
 
 if __name__ == "__main__":
-    with serial.Serial(PORT, BAUDRATE, timeout=1) as ser:
-        refresh_thread = threading.Thread(target=auto_refresh, args=(ser,), daemon=True)
-        refresh_thread.start()
-
-        socket_server()  # Aquí también deberías pasar `ser` a las funciones que lo necesiten
+    try:
+        with serial.Serial(PORT, BAUDRATE, timeout=1) as ser:
+            refresh_thread = threading.Thread(target=auto_refresh, args=(ser,), daemon=True)
+            refresh_thread.start()
+            socket_server(ser)
+    except KeyboardInterrupt:
+        logger.warning("Backend finalizado por el usuario.")
+    except Exception as e:
+        logger.error(f"Error crítico: {e}")
+    finally:
+        if os.path.exists(SOCKET_PATH):
+            os.remove(SOCKET_PATH)
