@@ -93,7 +93,10 @@ def handle_client(conn, ser):
                 send_packet_to_device(current_mode, current_brightness, ser)
                 conn.sendall(f"OK. Brillo cambiado a {level}\n".encode())
             elif cmd.startswith("GET_STATUS"):
-                status = f"Modo: {current_mode}, Brillo: {current_brightness}"
+                temp = get_cpu_temp()
+                ucpu = get_cpu_usage()
+                watts = get_cpu_watts()
+                status = f"TEMP:{temp};UCPU:{ucpu};WATTS:{watts}"
                 conn.sendall(f"{status}\n".encode())
             else:
                 conn.sendall(b"ERROR. Comando no reconocido.\n")

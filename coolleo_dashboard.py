@@ -10,7 +10,7 @@ from PyQt6.QtGui import QIcon, QAction
 
 translator = QTranslator()
 current_tray = None
-tray_actions = {}  # Almacenar las acciones del systray para actualizar sus textos
+tray_actions = {}
 
 class DashboardWindow(QWidget):
     def __init__(self):
@@ -18,22 +18,21 @@ class DashboardWindow(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        self.setWindowTitle(self.tr("Coolleo Dashboard"))
+        self.setWindowTitle(self.tr("Panel de control Coolleo"))
         self.setFixedSize(600, 400)
+        self.setWindowIcon(QIcon("resources/icon/coolleo_dashboard.svg"))
 
         main_layout = QVBoxLayout()
         main_layout.setSpacing(24)
 
         # Gráfico
-        self.plot_widget = pg.PlotWidget(title=self.tr("Temperatura, UCPU y Watts"))
+        self.plot_widget = pg.PlotWidget()
         self.plot_widget.setBackground((25, 25, 25))
         self.plot_widget.setYRange(0, 100)
         self.plot_widget.addLegend()
         self.plot_widget.getAxis('bottom').setTicks([])
 
-        self.temp_curve = self.plot_widget.plot(pen=pg.mkPen(color='#FF6666', width=2))
-        self.ucpu_curve = self.plot_widget.plot(pen=pg.mkPen(color='#66FF66', width=2))
-        self.watts_curve = self.plot_widget.plot(pen=pg.mkPen(color='#6699FF', width=2))
+        self.update_graph_labels()
 
         main_layout.addWidget(self.plot_widget)
 
@@ -42,13 +41,13 @@ class DashboardWindow(QWidget):
         self.mode_label = QLabel(self.tr("Modo:"))
         self.mode_label.setStyleSheet("font-size: 14px; padding-right: 10px;")
 
-        self.temp_button = QPushButton(self.tr("Mostrar Temperatura"))
+        self.temp_button = QPushButton(self.tr("Temperatura"))
         self.temp_button.clicked.connect(lambda: self.send_command("SET_MODE temperature"))
 
-        self.ucpu_button = QPushButton(self.tr("Mostrar UCPU"))
+        self.ucpu_button = QPushButton(self.tr("Uso CPU"))
         self.ucpu_button.clicked.connect(lambda: self.send_command("SET_MODE ucpu"))
 
-        self.alternate_button = QPushButton(self.tr("Alternar Temp/UCPU"))
+        self.alternate_button = QPushButton(self.tr("Temp/Uso CPU"))
         self.alternate_button.clicked.connect(lambda: self.send_command("SET_MODE alternate"))
 
         mode_layout.addWidget(self.mode_label)
@@ -143,27 +142,37 @@ class DashboardWindow(QWidget):
         self.watts_data.append(watts)
 
         self.plot_widget.clear()
+        self.plot_widget.setTitle(self.tr("Temperatura, Uso CPU y Watts"))
+
         self.temp_curve = self.plot_widget.plot(
             self.time_data, self.temp_data, pen=pg.mkPen(color='#FF6666', width=2),
-            name=f"Temp (°C): {temp}"
+            name=f"{self.tr('Temp (°C)')}: {temp}"
         )
         self.ucpu_curve = self.plot_widget.plot(
             self.time_data, self.ucpu_data, pen=pg.mkPen(color='#66FF66', width=2),
-            name=f"UCPU (%): {ucpu}"
+            name=f"{self.tr('Uso CPU (%)')}: {ucpu}"
         )
         self.watts_curve = self.plot_widget.plot(
             self.time_data, self.watts_data, pen=pg.mkPen(color='#6699FF', width=2),
-            name=f"Consumption (W): {watts:03}"
+            name=f"{self.tr('Consumo (W)')}: {watts:03}"
         )
         self.plot_widget.getAxis('bottom').setTicks([])
+
+    def update_graph_labels(self):
+        self.plot_widget.setTitle(self.tr("Temperatura, Uso CPU y Watts"))
+
+    def closeEvent(self, event):
+        event.ignore()
+        self.hide()
 
     def update_ui_texts(self):
         self.setWindowTitle(self.tr("Coolleo Dashboard"))
         self.mode_label.setText(self.tr("Modo:"))
-        self.temp_button.setText(self.tr("Mostrar Temperatura"))
-        self.ucpu_button.setText(self.tr("Mostrar UCPU"))
-        self.alternate_button.setText(self.tr("Alternar Temp/UCPU"))
+        self.temp_button.setText(self.tr("Temperatura"))
+        self.ucpu_button.setText(self.tr("Uso CPU"))
+        self.alternate_button.setText(self.tr("Temp/Uso CPU"))
         self.brightness_label.setText(self.tr("Brillo:"))
+        self.update_graph_labels()
         update_systray_texts()
 
     def change_language(self):
@@ -186,7 +195,7 @@ def update_systray_texts():
     global tray_actions, current_tray
     if tray_actions and current_tray:
         app = QApplication.instance()
-        tray_actions['show'].setText(app.translate("SysTray", "Mostrar Panel"))
+        tray_actions['show'].setText(app.translate("SysTray", "Mostrar"))
         tray_actions['exit'].setText(app.translate("SysTray", "Salir"))
 
 def systraymenu():
@@ -195,12 +204,12 @@ def systraymenu():
     dashboard_window = DashboardWindow()
 
     current_tray = QSystemTrayIcon()
-    current_tray.setIcon(QIcon.fromTheme("preferences-system"))
+    current_tray.setIcon(QIcon("resources/icon/coolleo_dashboard.svg"))
     current_tray.setVisible(True)
 
     menu = QMenu()
 
-    action_show = QAction(app.translate("SysTray", "Mostrar Panel"))
+    action_show = QAction(app.translate("SysTray", "Mostrar"))
     action_show.triggered.connect(dashboard_window.show)
     menu.addAction(action_show)
 
