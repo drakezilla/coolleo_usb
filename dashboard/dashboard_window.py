@@ -1,16 +1,15 @@
-import sys
 import socket
+import time
+import os
 import pyqtgraph as pg
-from PyQt6.QtCore import Qt, QTimer, QTranslator
+from PyQt6.QtCore import Qt, QTimer
 from PyQt6.QtWidgets import (
-    QApplication, QSystemTrayIcon, QMenu, QWidget, QLabel,
-    QVBoxLayout, QPushButton, QSlider, QHBoxLayout, QComboBox
+    QWidget, QLabel, QVBoxLayout, QPushButton, QSlider, QHBoxLayout
 )
-from PyQt6.QtGui import QIcon, QAction
+from PyQt6.QtGui import QIcon
 
-translator = QTranslator()
-current_tray = None
-tray_actions = {}
+BASE_DIR = os.path.dirname(os.path.abspath(__file__))
+ICON_PATH = os.path.abspath(os.path.join(BASE_DIR, "../resources/icon/coolleo_dashboard.svg"))
 
 class DashboardWindow(QWidget):
     def __init__(self):
@@ -18,36 +17,38 @@ class DashboardWindow(QWidget):
         self.init_ui()
 
     def init_ui(self):
-        self.setWindowTitle(self.tr("Panel de control Coolleo"))
+        self.setWindowTitle("Coolleo Dashboard")
         self.setFixedSize(600, 400)
-        self.setWindowIcon(QIcon("./resources/icon/coolleo_dashboard.svg"))
+
+        if os.path.exists(ICON_PATH):
+            self.setWindowIcon(QIcon(ICON_PATH))
+        else:
+            print("WARNING: Icon file not found for window.")
 
         main_layout = QVBoxLayout()
         main_layout.setSpacing(24)
 
-        # Gráfico
+        # Plot widget
         self.plot_widget = pg.PlotWidget()
         self.plot_widget.setBackground((25, 25, 25))
         self.plot_widget.setYRange(0, 100)
         self.plot_widget.addLegend()
         self.plot_widget.getAxis('bottom').setTicks([])
-
         self.update_graph_labels()
-
         main_layout.addWidget(self.plot_widget)
 
-        # Modo Controls
+        # Mode controls
         mode_layout = QHBoxLayout()
-        self.mode_label = QLabel(self.tr("Modo:"))
+        self.mode_label = QLabel("Mode:")
         self.mode_label.setStyleSheet("font-size: 14px; padding-right: 10px;")
 
-        self.temp_button = QPushButton(self.tr("Temperatura"))
+        self.temp_button = QPushButton("Temperature")
         self.temp_button.clicked.connect(lambda: self.send_command("SET_MODE temperature"))
 
-        self.ucpu_button = QPushButton(self.tr("Uso CPU"))
+        self.ucpu_button = QPushButton("CPU Usage")
         self.ucpu_button.clicked.connect(lambda: self.send_command("SET_MODE ucpu"))
 
-        self.alternate_button = QPushButton(self.tr("Temp/Uso CPU"))
+        self.alternate_button = QPushButton("Temp/CPU Usage")
         self.alternate_button.clicked.connect(lambda: self.send_command("SET_MODE alternate"))
 
         mode_layout.addWidget(self.mode_label)
@@ -55,12 +56,11 @@ class DashboardWindow(QWidget):
         mode_layout.addWidget(self.ucpu_button)
         mode_layout.addWidget(self.alternate_button)
         mode_layout.addStretch()
-
         main_layout.addLayout(mode_layout)
 
-        # Brillo Slider
+        # Brightness slider
         brightness_layout = QHBoxLayout()
-        self.brightness_label = QLabel(self.tr("Brillo:"))
+        self.brightness_label = QLabel("Brightness:")
         self.brightness_label.setStyleSheet("font-size: 14px; padding-right: 10px;")
 
         self.brightness_slider = QSlider(Qt.Orientation.Horizontal)
@@ -73,28 +73,11 @@ class DashboardWindow(QWidget):
         brightness_layout.addWidget(self.brightness_label)
         brightness_layout.addWidget(self.brightness_slider)
         brightness_layout.addStretch()
-
         main_layout.addLayout(brightness_layout)
-
-        # Selector de Idioma
-        language_layout = QHBoxLayout()
-        language_label = QLabel(self.tr("Idioma:"))
-        language_label.setStyleSheet("font-size: 14px; padding-right: 10px;")
-
-        self.language_selector = QComboBox()
-        self.language_selector.addItem("Español", "es")
-        self.language_selector.addItem("Inglés", "en")
-        self.language_selector.currentIndexChanged.connect(self.change_language)
-
-        language_layout.addWidget(language_label)
-        language_layout.addWidget(self.language_selector)
-        language_layout.addStretch()
-
-        main_layout.addLayout(language_layout)
 
         self.setLayout(main_layout)
 
-        # Timer para el gráfico
+        # Data and timer
         self.temp_data, self.ucpu_data, self.watts_data, self.time_data = [], [], [], []
         self.timer = QTimer()
         self.timer.timeout.connect(self.update_graph)
@@ -142,89 +125,25 @@ class DashboardWindow(QWidget):
         self.watts_data.append(watts)
 
         self.plot_widget.clear()
-        self.plot_widget.setTitle(self.tr("Temperatura, Uso CPU y Watts"))
+        self.plot_widget.setTitle("Temperature, CPU Usage, and Power consumption")
 
         self.temp_curve = self.plot_widget.plot(
             self.time_data, self.temp_data, pen=pg.mkPen(color='#FF6666', width=2),
-            name=f"{self.tr('Temp (°C)')}: {temp}"
+            name=f"Temp (°C): {temp}"
         )
         self.ucpu_curve = self.plot_widget.plot(
             self.time_data, self.ucpu_data, pen=pg.mkPen(color='#66FF66', width=2),
-            name=f"{self.tr('Uso CPU (%)')}: {ucpu}"
+            name=f"CPU Usage (%): {ucpu}"
         )
         self.watts_curve = self.plot_widget.plot(
             self.time_data, self.watts_data, pen=pg.mkPen(color='#6699FF', width=2),
-            name=f"{self.tr('Consumo (W)')}: {watts:03}"
+            name=f"Power (W): {watts:03}"
         )
         self.plot_widget.getAxis('bottom').setTicks([])
 
     def update_graph_labels(self):
-        self.plot_widget.setTitle(self.tr("Temperatura, Uso CPU y Watts"))
+        self.plot_widget.setTitle("Temperature, CPU Usage, and Power consumption")
 
     def closeEvent(self, event):
         event.ignore()
         self.hide()
-
-    def update_ui_texts(self):
-        self.setWindowTitle(self.tr("Coolleo Dashboard"))
-        self.mode_label.setText(self.tr("Modo:"))
-        self.temp_button.setText(self.tr("Temperatura"))
-        self.ucpu_button.setText(self.tr("Uso CPU"))
-        self.alternate_button.setText(self.tr("Temp/Uso CPU"))
-        self.brightness_label.setText(self.tr("Brillo:"))
-        self.update_graph_labels()
-        update_systray_texts()
-
-    def change_language(self):
-        language_code = self.language_selector.currentData()
-        set_language(QApplication.instance(), language_code, self)
-
-def set_language(app, language_code, dashboard_window):
-    global translator
-    translator = QTranslator()
-
-    if language_code == "es":
-        translator.load("i18n/ES_es.qm")
-    elif language_code == "en":
-        translator.load("i18n/EN_en.qm")
-
-    app.installTranslator(translator)
-    dashboard_window.update_ui_texts()
-
-def update_systray_texts():
-    global tray_actions, current_tray
-    if tray_actions and current_tray:
-        app = QApplication.instance()
-        tray_actions['show'].setText(app.translate("SysTray", "Mostrar"))
-        tray_actions['exit'].setText(app.translate("SysTray", "Salir"))
-
-def systraymenu():
-    global current_tray, tray_actions
-    app = QApplication(sys.argv)
-    dashboard_window = DashboardWindow()
-
-    current_tray = QSystemTrayIcon()
-    current_tray.setIcon(QIcon("./resources/icon/coolleo_dashboard.svg"))
-    current_tray.setVisible(True)
-
-    menu = QMenu()
-
-    action_show = QAction(app.translate("SysTray", "Mostrar"))
-    action_show.triggered.connect(dashboard_window.show)
-    menu.addAction(action_show)
-
-    exit_action = QAction(app.translate("SysTray", "Salir"))
-    exit_action.triggered.connect(app.quit)
-    menu.addAction(exit_action)
-
-    tray_actions = {'show': action_show, 'exit': exit_action}
-
-    current_tray.setContextMenu(menu)
-
-    sys.exit(app.exec())
-
-def main():
-    systraymenu()
-
-if __name__ == "__main__":
-    main()

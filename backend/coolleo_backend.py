@@ -9,8 +9,12 @@ import sys
 import os
 
 SOCKET_PATH = "/tmp/coolleo_socket"
-PORT = "/dev/ttyACM0"
 BAUDRATE = 9600
+
+if len(sys.argv) > 1:
+    PORT = sys.argv[1]
+
+print(f"Using serial port: {PORT}")  # Debug opcional para confirmar
 
 current_mode = "temperature"
 current_brightness = 5
