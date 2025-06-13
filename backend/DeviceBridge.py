@@ -9,7 +9,8 @@ from config import coolleo
 
 class DeviceBridge():
     _socket_path = "/tmp/coolleo_socket"
-    def __init__(self):
+    def __init__(self, device_info):
+        self.device_info = device_info
         atexit.register(self._cleanup_socket)
 
     def handle(self):
@@ -24,13 +25,12 @@ class DeviceBridge():
         logger("info", f"Now listening {self._socket_path}")
 
     def uplink_port(self):
-        device_info = DeviceDetection().handle()
         self.port = serial.Serial(
-            device_info["device_port"],
+            self.device_info["device_port"],
             coolleo.default_baudrate,
             timeout=1
         )
-        logger("info", f"{device_info['device_port']} opened at {coolleo.default_baudrate} rate")
+        logger("info", f"{self.device_info['device_port']} opened at {coolleo.default_baudrate} rate")
             
     def _cleanup_socket(self):
         if (os.path.exists(self._socket_path)):

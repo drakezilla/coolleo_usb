@@ -1,3 +1,5 @@
+.vscode/
 env/
 *.kate-swp
 config.json
+__pycache__/
