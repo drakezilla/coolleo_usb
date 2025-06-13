@@ -1,7 +1,5 @@
 import serial.tools.list_ports
 
-from utils.helper import logger
-
 COOLLEO_NAME_PREFIX = "CH5"
 
 class DeviceDetection():

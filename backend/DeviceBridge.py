@@ -4,7 +4,6 @@ import os
 import socket
 
 from utils.helper import logger
-from backend.DeviceDetection import DeviceDetection
 from config import coolleo
 
 class DeviceBridge():
