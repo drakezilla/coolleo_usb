@@ -44,7 +44,7 @@ def get_cpu_temp():
                     if "°C" in part:
                         return int(float(part.replace("°C", "").replace("+", "")))
         return 40
-    except Exception as e:
+    except Exception as e:      
         logger.warning(f"Error al obtener temperatura: {e}")
         return 40
 
