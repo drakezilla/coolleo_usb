@@ -17,6 +17,7 @@ class DeviceBridge():
         return self
 
     def uplink_server(self):
+        self._cleanup_socket()
         self.server = socket.socket(socket.AF_UNIX, socket.SOCK_STREAM)
         self.server.bind(coolleo.socket_path)
         self.server.listen()
