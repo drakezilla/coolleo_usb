@@ -3,3 +3,4 @@ env/
 *.kate-swp
 config.json
 __pycache__/
+.env
