@@ -1,4 +1,5 @@
 from utils.helper import logger
+from config import coolleo
 from core.SystemMetrics import SystemMetrics
 
 
@@ -20,4 +21,5 @@ class DeviceCommunication():
         packet_bytes = bytes.fromhex(packet)
 
         server_socket.write(packet_bytes)
-        logger("debug", f"Enviado al disipador: {packet.upper()}")
+        if coolleo.show_device_communication:
+            logger("debug", f"Enviado al disipador: {packet.upper()}")

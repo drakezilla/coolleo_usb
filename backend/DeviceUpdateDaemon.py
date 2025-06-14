@@ -9,7 +9,7 @@ class DeviceUpdateDaemon(threading.Thread):
     def __init__(self, device_controller):
         super().__init__(daemon=True)
         self.controller = device_controller
-        self.interval = coolleo.default_refresh_interval
+        self.interval = coolleo.refresh_interval
         self._running = True
 
     def run(self):
