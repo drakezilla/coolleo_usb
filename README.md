@@ -59,5 +59,9 @@ This is a personal project. Feel free to fork and contribute!
 [MIT](https://choosealicense.com/licenses/mit/)
 ## TODO
 
+<<<<<<< HEAD
 - Generate tests and mocks for the backend
 - Generate an appimage
+=======
+- Generate tests and mocks for the backend
+>>>>>>> c98744c0b415601fb46446c8706fc3943b871a09
