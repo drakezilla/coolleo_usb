@@ -3,7 +3,7 @@ from collections import deque
 from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout
 from PyQt6.QtCore import QTimer
 
-from gui.communication.DeviceCommunication import DeviceCommunication
+from gui.communication.DeviceGuiCommunication import DeviceGuiCommunication
 
 GRAPH_TITLE = "Temperature, CPU Usage, and Power consumption"
 
@@ -45,7 +45,7 @@ class Graph():
         return graph_layout
     
     def update_graph(self):
-        temp, ucpu, watts = DeviceCommunication.read_device_status()
+        temp, ucpu, watts = DeviceGuiCommunication.read_device_status()
         
         self.time_data.append(self.counter)
         self.counter += 1

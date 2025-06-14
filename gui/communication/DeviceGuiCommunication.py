@@ -3,7 +3,7 @@ import socket
 from config import coolleo
 
 
-class DeviceCommunication():
+class DeviceGuiCommunication():
 
     @classmethod
     def send_command(cls, command: str) -> str:

@@ -1,7 +1,7 @@
 from PyQt6.QtWidgets import QPushButton, QHBoxLayout, QLabel, QVBoxLayout, QSlider
 from PyQt6.QtCore import Qt
 
-from gui.communication.DeviceCommunication import DeviceCommunication
+from gui.communication.DeviceGuiCommunication import DeviceGuiCommunication
 
 class ActionButtons():
 
@@ -18,13 +18,13 @@ class ActionButtons():
         label = QLabel("Mode:")
         
         temp_button = QPushButton("Temperature")
-        temp_button.clicked.connect(lambda: print(DeviceCommunication.set_mode("temperature")))
+        temp_button.clicked.connect(lambda: print(DeviceGuiCommunication.set_mode("temperature")))
 
         usage_button = QPushButton("CPU Usage")
-        usage_button.clicked.connect(lambda: print(DeviceCommunication.set_mode("usage")))
+        usage_button.clicked.connect(lambda: print(DeviceGuiCommunication.set_mode("usage")))
 
         alternate_button = QPushButton("Alternate")
-        alternate_button.clicked.connect(lambda: print(DeviceCommunication.set_mode("alternate")))
+        alternate_button.clicked.connect(lambda: print(DeviceGuiCommunication.set_mode("alternate")))
 
         mode_layout.addWidget(label)
         mode_layout.addWidget(temp_button)
@@ -42,7 +42,7 @@ class ActionButtons():
         slider.setMaximum(5)
         slider.setMinimum(1)
         slider.setFixedWidth(436)
-        slider.sliderReleased.connect(lambda: print(DeviceCommunication.set_brightness(slider.value())))
+        slider.sliderReleased.connect(lambda: print(DeviceGuiCommunication.set_brightness(slider.value())))
 
         brightness_layout.addWidget(label)
         brightness_layout.addWidget(slider)
