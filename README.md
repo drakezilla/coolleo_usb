@@ -57,3 +57,10 @@ This is a personal project. Feel free to fork and contribute!
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
+## TODO
+
+- Generate tests and mocks for the backend
+## Screenshots
+
+![Logo](https://raw.githubusercontent.com/drakezilla/coolleo_usb/refs/heads/master/resources/screenshots/screenshot1.png)
+
