@@ -18,7 +18,7 @@ class CoolleoGui():
     def start(self):
         self.window.show()
         #systray begin. I can't move it anywhere else
-        tray_icon = QSystemTrayIcon(QIcon(str(coolleo.resource_path / "icon/systray.svg")), self.window)
+        tray_icon = QSystemTrayIcon(QIcon(str(coolleo.resource_path / "icon/coolleo.png")), self.window)
         tray_icon.setToolTip("Coolleo Dashboard")
 
         menu = QMenu()
@@ -43,7 +43,7 @@ class CoolleoGui():
     def main_window(self):
         main_window = CoolleoMainWindow()
         main_window.__init__()
-        main_window.setWindowIcon(QIcon(str(coolleo.resource_path / "icon/systray.svg")))
+        main_window.setWindowIcon(QIcon(str(coolleo.resource_path / "icon/coolleo.png")))
         main_window.setFixedSize(QSize(600, 400))
         main_window.setWindowTitle(COOLLEO_WINDOW_TITLE)
 
