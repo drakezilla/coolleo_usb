@@ -1,5 +1,5 @@
 
-![Logo](https://raw.githubusercontent.com/drakezilla/coolleo_usb/5057c220f9332cdf3411abfdce282b06594a9c83/resources/icon/systray.svg)
+![Logo](resources/icon/coolleo.png)
 
 
 # Coolleo B40S DIG Linux Driver
@@ -57,10 +57,6 @@ This is a personal project. Feel free to fork and contribute!
 ## License
 
 [MIT](https://choosealicense.com/licenses/mit/)
-## TODO
-
-- Generate tests and mocks for the backend
 ## Screenshots
 
-![Logo](https://raw.githubusercontent.com/drakezilla/coolleo_usb/refs/heads/master/resources/screenshots/screenshot1.png)
-
+![Logo](resources/screenshots/screenshot1.png)
