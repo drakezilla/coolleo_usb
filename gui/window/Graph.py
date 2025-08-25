@@ -4,6 +4,8 @@ from PyQt6.QtWidgets import QVBoxLayout, QHBoxLayout
 from PyQt6.QtCore import QTimer
 
 from gui.communication.DeviceGuiCommunication import DeviceGuiCommunication
+from core.TemperatureThresholdMonitor import TemperatureThresholdMonitor
+from gui.window.ThresholdsConfigDialog import ThresholdsConfigDialog
 
 GRAPH_TITLE = "Temperature, CPU Usage, and Power consumption"
 
@@ -33,6 +35,9 @@ class Graph():
         )
 
         self.timer = QTimer()
+
+        self.on_alert = None
+        self._temp_monitor = TemperatureThresholdMonitor(consecutive_required=3)
     
     def handle(self):
         graph_layout = QVBoxLayout()
@@ -46,6 +51,11 @@ class Graph():
     
     def update_graph(self):
         temp, ucpu, watts = DeviceGuiCommunication.read_device_status()
+
+        warning_c, critical_c = ThresholdsConfigDialog.get_thresholds()
+        level = self._temp_monitor.check(float(temp), warning_c, critical_c)
+        if level and callable(self.on_alert):
+            self.on_alert(level, float(temp), warning_c, critical_c)
         
         self.time_data.append(self.counter)
         self.counter += 1
