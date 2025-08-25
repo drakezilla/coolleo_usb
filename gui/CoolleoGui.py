@@ -151,7 +151,8 @@ class CoolleoGui():
 
     def _prepare_graceful_shutdown(self):
         if hasattr(self, "graph") and hasattr(self.graph, "stop"):
-            try: self.graph.stop()
+            try: 
+                self.graph.stop()
             except Exception:
                 pass
 
