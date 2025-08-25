@@ -1,4 +1,6 @@
-import sys, subprocess, shutil
+import sys
+import subprocess
+import shutil
 from PyQt6.QtCore import QSize
 from PyQt6.QtWidgets import QApplication, QWidget, QMainWindow, QVBoxLayout, QSystemTrayIcon, QMenu, QMessageBox
 from PyQt6.QtGui import QIcon, QAction, QCloseEvent
