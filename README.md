@@ -6,8 +6,8 @@
 
 Graphical controller and real-time backend for the Coolleo B40S DIG cooler.
 
-
-
+## Download
+I have some appimages in the releases page [here](https://github.com/drakezilla/coolleo_usb/releases)
 
 ## Tested on
 
